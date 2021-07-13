@@ -568,13 +568,17 @@ public class ARSCDecoder {
       // 混淆过或者已经添加到白名单的都不需要再处理了
       if (!mResguardBuilder.isReplaced(mCurEntryID) && !mResguardBuilder.isInWhiteList(mCurEntryID)) {
         Configuration config = mApkDecoder.getConfig();
-        boolean isWhiteList = false;
-        if (config.mUseWhiteList) {
-          isWhiteList = dealWithWhiteList(specNamesId, config);
-        }
+        if(config.mUseBlackList){
+          dealWithBlackList(specNamesId, config);
+        }else {
+          boolean isWhiteList = false;
+          if (config.mUseWhiteList) {
+            isWhiteList = dealWithWhiteList(specNamesId, config);
+          }
 
-        if (!isWhiteList) {
-          dealWithNonWhiteList(specNamesId, config);
+          if (!isWhiteList) {
+            dealWithNonWhiteList(specNamesId, config);
+          }
         }
       }
     }
@@ -617,6 +621,39 @@ public class ARSCDecoder {
         }
       }
     }
+    return false;
+  }
+
+  private boolean dealWithBlackList(int specNamesId, Configuration config) throws AndrolibException, IOException {
+    String packName = mPkg.getName();
+    String specName = mSpecNames.get(specNamesId).toString();
+
+    if (config.mBlackList.containsKey(packName)) {
+      HashMap<String, HashSet<Pattern>> typeMaps = config.mBlackList.get(packName);
+      String typeName = mType.getName();
+      if (typeMaps.containsKey(typeName)) {
+        HashSet<Pattern> patterns = typeMaps.get(typeName);
+        for (Iterator<Pattern> it = patterns.iterator(); it.hasNext(); ) {
+          Pattern p = it.next();
+          if (p.matcher(specName).matches()) {
+            if (DEBUG) {
+              System.out.printf("[bk match] matcher %s ,typeName %s, specName :%s\n", p.pattern(), typeName, specName);
+            }
+            dealWithNonWhiteList(specNamesId,config);
+            return true;
+          }
+        }
+      }
+    }
+
+    if (DEBUG) {
+      System.out.printf("[bk no match] specName :%s\n",  specName);
+    }
+    mPkg.putSpecNamesReplace(mResId, specName);
+    mPkg.putSpecNamesblock(specName, specName);
+    mResguardBuilder.setInWhiteList(mCurEntryID);
+
+    mType.putSpecResguardName(specName);
     return false;
   }
 

@@ -47,6 +47,8 @@ public class Configuration {
   private static final String ATTR_SIGNFILE_STOREPASS = "storepass";
   private static final String ATTR_SIGNFILE_ALIAS = "alias";
   public final HashMap<String, HashMap<String, HashSet<Pattern>>> mWhiteList;
+  public final HashMap<String, HashMap<String, HashSet<Pattern>>> mBlackList;
+
   public final HashMap<String, HashMap<String, HashMap<String, String>>> mOldResMapping;
   public final HashMap<String, String> mOldFileMapping;
   public final HashSet<Pattern> mCompressPatterns;
@@ -62,6 +64,7 @@ public class Configuration {
   public File mSignatureFile;
   public File mOldMappingFile;
   public boolean mUseWhiteList;
+  public boolean mUseBlackList;
   public boolean mUseCompress;
   public String mKeyPass;
   public String mStorePass;
@@ -94,6 +97,7 @@ public class Configuration {
       String storealias,
       String storepass) throws IOException, ParserConfigurationException, SAXException {
     mWhiteList = new HashMap<>();
+    mBlackList = new HashMap<>();
     mOldResMapping = new HashMap<>();
     mOldFileMapping = new HashMap<>();
     mCompressPatterns = new HashSet<>();
@@ -118,6 +122,7 @@ public class Configuration {
    */
   public Configuration(InputParam param) throws IOException {
     mWhiteList = new HashMap<>();
+    mBlackList = new HashMap<>();
     mOldResMapping = new HashMap<>();
     mOldFileMapping = new HashMap<>();
     mCompressPatterns = new HashSet<>();
@@ -129,10 +134,19 @@ public class Configuration {
       mUseKeepMapping = true;
       setKeepMappingData(param.mappingFile);
     }
-    for (String item : param.whiteList) {
-      mUseWhiteList = true;
-      addWhiteList(item);
+    if(param.blackList.size() > 0){
+      mUseBlackList = true;
+      for (String item : param.blackList) {
+        addBlackList(item);
+      }
     }
+    if(!mUseBlackList) {
+      for (String item : param.whiteList) {
+        mUseWhiteList = true;
+        addWhiteList(item);
+      }
+    }
+
     mUse7zip = param.use7zip;
     mKeepRoot = param.keepRoot;
     mMergeDuplicatedRes = param.mergeDuplicatedRes;
@@ -299,6 +313,48 @@ public class Configuration {
     typeMap.put(typeName, patterns);
     System.out.println(String.format("convertToPatternString typeName %s format %s", typeName, name));
     mWhiteList.put(packageName, typeMap);
+  }
+
+  private void addBlackList(String item) throws IOException {
+    if (item.length() == 0) {
+      throw new IOException("Invalid config file: Missing required attribute " + ATTR_VALUE);
+    }
+
+    int packagePos = item.indexOf(".R.");
+    if (packagePos == -1) {
+
+      throw new IOException(String.format("please write the full package name,eg com.tencent.mm.R.drawable.dfdf, but yours %s\n",
+              item
+      ));
+    }
+    //先去掉空格
+    item = item.trim();
+    String packageName = item.substring(0, packagePos);
+    //不能通过lastDot
+    int nextDot = item.indexOf(".", packagePos + 3);
+    String typeName = item.substring(packagePos + 3, nextDot);
+    String name = item.substring(nextDot + 1);
+    HashMap<String, HashSet<Pattern>> typeMap;
+
+    if (mBlackList.containsKey(packageName)) {
+      typeMap = mBlackList.get(packageName);
+    } else {
+      typeMap = new HashMap<>();
+    }
+
+    HashSet<Pattern> patterns;
+    if (typeMap.containsKey(typeName)) {
+      patterns = typeMap.get(typeName);
+    } else {
+      patterns = new HashSet<>();
+    }
+
+    name = Utils.convertToPatternString(name);
+    Pattern pattern = Pattern.compile(name);
+    patterns.add(pattern);
+    typeMap.put(typeName, patterns);
+    System.out.println(String.format("convertToPatternString typeName %s format %s", typeName, name));
+    mBlackList.put(packageName, typeMap);
   }
 
   private void readSignFromXml(Node node, File xmlConfigFileParentFile) throws IOException {

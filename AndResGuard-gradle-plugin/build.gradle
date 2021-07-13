@@ -17,3 +17,12 @@ repositories {
 
 apply from: rootProject.file('gradle/java-artifacts.gradle')
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
+
+uploadArchives {
+  repositories.mavenDeployer {
+    repository(url: uri('../repo'))
+//    pom.groupId = 'com.kubi.plugin'
+//    pom.artifactId = 'AndResGuard-gradle-plugin'
+//    pom.version = '1.2.20'
+  }
+}

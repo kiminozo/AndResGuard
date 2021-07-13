@@ -16,6 +16,7 @@ class AndResGuardExtension {
   boolean keepRoot
   boolean mergeDuplicatedRes
   Iterable<String> whiteList
+  Iterable<String> blackList
   Iterable<String> compressFilePattern
   String finalApkBackupPath
   String digestalg
@@ -31,6 +32,7 @@ class AndResGuardExtension {
     keepRoot = false
     mergeDuplicatedRes = false
     whiteList = []
+    blackList = []
     compressFilePattern = []
     mappingFile = null
     finalApkBackupPath = null
@@ -76,6 +78,10 @@ class AndResGuardExtension {
     return whiteList
   }
 
+  Iterable<String> getBlackList() {
+    return blackList
+  }
+
   String getFinalApkBackupPath() {
     return finalApkBackupPath
   }
@@ -105,6 +111,7 @@ class AndResGuardExtension {
            | keepRoot = ${keepRoot}
            | mergeDuplicatedRes = ${mergeDuplicatedRes}
            | whiteList = ${whiteList}
+           | whiteList = ${blackList}
            | compressFilePattern = ${compressFilePattern}
            | finalApkBackupPath = ${finalApkBackupPath}
            | digstalg = ${digestalg}

@@ -14,6 +14,7 @@ public class InputParam {
   public final String metaName;
   public final String fixedResName;
   public final ArrayList<String> whiteList;
+  public final ArrayList<String> blackList;
   public final ArrayList<String> compressFilePattern;
   public final String apkPath;
   public final String outFolder;
@@ -36,6 +37,7 @@ public class InputParam {
       boolean keepRoot,
       boolean mergeDuplicatedRes,
       ArrayList<String> whiteList,
+      ArrayList<String> blackList,
       ArrayList<String> compressFilePattern,
       String apkPath,
       String outFolder,
@@ -59,6 +61,7 @@ public class InputParam {
     this.keepRoot = keepRoot;
     this.mergeDuplicatedRes = mergeDuplicatedRes;
     this.whiteList = whiteList;
+    this.blackList = blackList;
     this.compressFilePattern = compressFilePattern;
     this.apkPath = apkPath;
     this.outFolder = outFolder;
@@ -89,6 +92,7 @@ public class InputParam {
     private boolean keepRoot;
     private boolean mergeDuplicatedRes;
     private ArrayList<String> whiteList;
+    private ArrayList<String> blackList;
     private ArrayList<String> compressFilePattern;
     private String apkPath;
     private String outFolder;
@@ -139,6 +143,11 @@ public class InputParam {
 
     public Builder setWhiteList(ArrayList<String> whiteList) {
       this.whiteList = whiteList;
+      return this;
+    }
+
+    public Builder setBlackList(ArrayList<String> blackList) {
+      this.blackList = blackList;
       return this;
     }
 
@@ -246,6 +255,7 @@ public class InputParam {
           keepRoot,
           mergeDuplicatedRes,
           whiteList,
+          blackList,
           compressFilePattern,
           apkPath,
           outFolder,

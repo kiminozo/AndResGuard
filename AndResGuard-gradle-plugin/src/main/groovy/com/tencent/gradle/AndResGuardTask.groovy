@@ -129,6 +129,8 @@ class AndResGuardTask extends DefaultTask {
     def signConfig = config.signConfig
     String packageName = config.packageName
     ArrayList<String> whiteListFullName = new ArrayList<>()
+    ArrayList<String> blackListFullName = new ArrayList<>()
+
     ExecutorExtension sevenzip = project.extensions.findByName("sevenzip") as ExecutorExtension
     configuration.whiteList.each { res ->
       if (res.startsWith("R")) {
@@ -138,9 +140,18 @@ class AndResGuardTask extends DefaultTask {
       }
     }
 
+    configuration.blackList.each { res ->
+      if (res.startsWith("R")) {
+        blackListFullName.add(packageName + "." + res)
+      } else {
+        blackListFullName.add(res)
+      }
+    }
+
     InputParam.Builder builder = new InputParam.Builder()
         .setMappingFile(configuration.mappingFile)
         .setWhiteList(whiteListFullName)
+        .setBlackList(blackListFullName)
         .setUse7zip(configuration.use7zip)
         .setMetaName(configuration.metaName)
         .setFixedResName(configuration.fixedResName)
